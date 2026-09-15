@@ -9,3 +9,6 @@ data/model_registry.json
 data/notes.json
 data/presets.json
 data/patches/
+
+# 代码创建与修改记录（本地留存，不入库）
+code_log/
