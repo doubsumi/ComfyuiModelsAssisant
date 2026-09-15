@@ -1,0 +1,359 @@
+{
+  "id": "minimax_h3_fl2va",
+  "version": "1.0.0",
+  "label": "MiniMax H3 · 图生视频 / 文生视频",
+  "category": "video",
+  "compatibleArchitectures": ["minimax_h3_fl2va"],
+  "nodeIdPool": { "base": 1, "lora": 1000, "optional": 2000 },
+  "nodes": [
+    {
+      "key": "unet",
+      "type": "UNETLoader",
+      "pos": [-2020, 4630],
+      "size": [640, 90],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "unet_name", "type": "COMBO", "widget": { "name": "unet_name" } },
+        { "name": "weight_dtype", "type": "COMBO", "widget": { "name": "weight_dtype" } }
+      ],
+      "outputs": [{ "name": "MODEL", "type": "MODEL" }],
+      "properties": { "Node name for S&R": "UNETLoader" },
+      "widgets_values": ["minimax_h3_fl2va_pruned_int8_convrot.safetensors", "default"]
+    },
+    {
+      "key": "clip",
+      "type": "CLIPLoader",
+      "pos": [-2020, 4780],
+      "size": [640, 120],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "clip_name", "type": "COMBO", "widget": { "name": "clip_name" } },
+        { "name": "type", "type": "COMBO", "widget": { "name": "type" } },
+        { "name": "device", "type": "COMBO", "widget": { "name": "device" } }
+      ],
+      "outputs": [{ "name": "CLIP", "type": "CLIP" }],
+      "properties": { "Node name for S&R": "CLIPLoader" },
+      "widgets_values": ["qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors", "minimax", "default"]
+    },
+    {
+      "key": "videoVae",
+      "type": "VAELoader",
+      "pos": [-2020, 4970],
+      "size": [640, 70],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "vae_name", "type": "COMBO", "widget": { "name": "vae_name" } }
+      ],
+      "outputs": [{ "name": "VAE", "type": "VAE" }],
+      "properties": { "Node name for S&R": "VAELoader" },
+      "widgets_values": ["minimax_h3_video_vae_fp16.safetensors"]
+    },
+    {
+      "key": "audioVae",
+      "type": "VAELoader",
+      "pos": [-2020, 5100],
+      "size": [650, 70],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "vae_name", "type": "COMBO", "widget": { "name": "vae_name" } }
+      ],
+      "outputs": [{ "name": "VAE", "type": "VAE" }],
+      "properties": { "Node name for S&R": "VAELoader" },
+      "widgets_values": ["minimax_h3_audio_vae_fp32.safetensors"]
+    },
+    {
+      "key": "mathExpr",
+      "type": "ComfyMathExpression",
+      "pos": [-1710, 5300],
+      "size": [360, 160],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "values.a", "type": "FLOAT,INT,BOOLEAN" },
+        { "name": "values.b", "type": "FLOAT,INT,BOOLEAN" },
+        { "name": "expression", "type": "STRING", "widget": { "name": "expression" } }
+      ],
+      "outputs": [
+        { "name": "FLOAT", "type": "FLOAT" },
+        { "name": "INT", "type": "INT" },
+        { "name": "BOOL", "type": "BOOLEAN" }
+      ],
+      "properties": { "Node name for S&R": "ComfyMathExpression" },
+      "widgets_values": ["max(5, round(a * 24)) + (5 - (max(5, round(a * 24)) % 17)) % 17"]
+    },
+    {
+      "key": "duration",
+      "type": "PrimitiveFloat",
+      "pos": [-2020, 5300],
+      "size": [270, 70],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "value", "type": "FLOAT", "widget": { "name": "value" } }
+      ],
+      "outputs": [{ "name": "FLOAT", "type": "FLOAT" }],
+      "title": "Float (duration)",
+      "properties": { "Node name for S&R": "PrimitiveFloat" },
+      "widgets_values": [5.0]
+    },
+    {
+      "key": "conditioning",
+      "type": "MiniMaxH3ImageToVideo",
+      "pos": [-1290, 4650],
+      "size": [410, 510],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "clip", "type": "CLIP" },
+        { "name": "vae", "type": "VAE" },
+        { "name": "first_frame", "type": "IMAGE", "shape": 7 },
+        { "name": "last_frame", "type": "IMAGE", "shape": 7 },
+        { "name": "prompt", "type": "STRING", "widget": { "name": "prompt" } },
+        { "name": "width", "type": "INT", "widget": { "name": "width" } },
+        { "name": "height", "type": "INT", "widget": { "name": "height" } },
+        { "name": "length", "type": "INT", "widget": { "name": "length" } }
+      ],
+      "outputs": [
+        { "name": "positive", "type": "CONDITIONING" },
+        { "name": "LATENT", "type": "LATENT" }
+      ],
+      "properties": { "Node name for S&R": "MiniMaxH3ImageToVideo" },
+      "widgets_values": ["", 1344, 768, 121]
+    },
+    {
+      "key": "scheduler",
+      "type": "BasicScheduler",
+      "pos": [-790, 5030],
+      "size": [370, 130],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL" },
+        { "name": "scheduler", "type": "COMBO", "widget": { "name": "scheduler" } },
+        { "name": "steps", "type": "INT", "widget": { "name": "steps" } },
+        { "name": "denoise", "type": "FLOAT", "widget": { "name": "denoise" } }
+      ],
+      "outputs": [{ "name": "SIGMAS", "type": "SIGMAS" }],
+      "properties": { "Node name for S&R": "BasicScheduler" },
+      "widgets_values": ["simple", 20, 1.0]
+    },
+    {
+      "key": "samplerSelect",
+      "type": "KSamplerSelect",
+      "pos": [-790, 4910],
+      "size": [370, 70],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "sampler_name", "type": "COMBO", "widget": { "name": "sampler_name" } }
+      ],
+      "outputs": [{ "name": "SAMPLER", "type": "SAMPLER" }],
+      "properties": { "Node name for S&R": "KSamplerSelect" },
+      "widgets_values": ["res_multistep"]
+    },
+    {
+      "key": "noise",
+      "type": "RandomNoise",
+      "pos": [-790, 4660],
+      "size": [360, 90],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "noise_seed", "type": "INT", "widget": { "name": "noise_seed" } }
+      ],
+      "outputs": [{ "name": "NOISE", "type": "NOISE" }],
+      "properties": { "Node name for S&R": "RandomNoise" },
+      "widgets_values": [0, "randomize"]
+    },
+    {
+      "key": "guider",
+      "type": "BasicGuider",
+      "pos": [-790, 4800],
+      "size": [360, 60],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL" },
+        { "name": "conditioning", "type": "CONDITIONING" }
+      ],
+      "outputs": [{ "name": "GUIDER", "type": "GUIDER" }],
+      "properties": { "Node name for S&R": "BasicGuider" },
+      "widgets_values": []
+    },
+    {
+      "key": "sampler",
+      "type": "SamplerCustomAdvanced",
+      "pos": [-360, 4820],
+      "size": [230, 140],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "noise", "type": "NOISE" },
+        { "name": "guider", "type": "GUIDER" },
+        { "name": "sampler", "type": "SAMPLER" },
+        { "name": "sigmas", "type": "SIGMAS" },
+        { "name": "latent_image", "type": "LATENT" }
+      ],
+      "outputs": [
+        { "name": "output", "type": "LATENT" },
+        { "name": "denoised_output", "type": "LATENT" }
+      ],
+      "properties": { "Node name for S&R": "SamplerCustomAdvanced" },
+      "widgets_values": []
+    },
+    {
+      "key": "videoDecode",
+      "type": "VAEDecode",
+      "pos": [-50, 4760],
+      "size": [230, 60],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "samples", "type": "LATENT" },
+        { "name": "vae", "type": "VAE" }
+      ],
+      "outputs": [{ "name": "IMAGE", "type": "IMAGE" }],
+      "properties": { "Node name for S&R": "VAEDecode" },
+      "widgets_values": []
+    },
+    {
+      "key": "audioDecode",
+      "type": "VAEDecodeAudio",
+      "pos": [-50, 4880],
+      "size": [230, 60],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "samples", "type": "LATENT" },
+        { "name": "vae", "type": "VAE" }
+      ],
+      "outputs": [{ "name": "AUDIO", "type": "AUDIO" }],
+      "properties": { "Node name for S&R": "VAEDecodeAudio" },
+      "widgets_values": []
+    },
+    {
+      "key": "createVideo",
+      "type": "CreateVideo",
+      "pos": [260, 4790],
+      "size": [270, 110],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "images", "type": "IMAGE" },
+        { "name": "audio", "type": "AUDIO", "shape": 7 },
+        { "name": "fps", "type": "FLOAT", "widget": { "name": "fps" } }
+      ],
+      "outputs": [{ "name": "VIDEO", "type": "VIDEO" }],
+      "properties": { "Node name for S&R": "CreateVideo" },
+      "widgets_values": [24]
+    },
+    {
+      "key": "saveVideo",
+      "type": "SaveVideo",
+      "pos": [-660, 4840],
+      "size": [1070, 692],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "video", "type": "VIDEO" },
+        { "name": "filename_prefix", "type": "STRING", "widget": { "name": "filename_prefix" } }
+      ],
+      "outputs": [],
+      "properties": { "Node name for S&R": "SaveVideo" },
+      "widgets_values": ["video/MiniMax_H3"]
+    },
+    {
+      "key": "firstFrameNode",
+      "type": "LoadImage",
+      "pos": [-1408, 4837],
+      "size": [260, 326],
+      "flags": {},
+      "mode": 0,
+      "optional": "firstFrame",
+      "inputs": [
+        { "name": "image", "type": "COMBO", "widget": { "name": "image" } },
+        { "name": "upload", "type": "IMAGEUPLOAD", "widget": { "name": "upload" } }
+      ],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE" },
+        { "name": "MASK", "type": "MASK" }
+      ],
+      "properties": { "Node name for S&R": "LoadImage" },
+      "widgets_values": ["", "image"]
+    },
+    {
+      "key": "lastFrameNode",
+      "type": "LoadImage",
+      "pos": [-1114, 4838],
+      "size": [263, 326],
+      "flags": {},
+      "mode": 0,
+      "optional": "lastFrame",
+      "inputs": [
+        { "name": "image", "type": "COMBO", "widget": { "name": "image" } },
+        { "name": "upload", "type": "IMAGEUPLOAD", "widget": { "name": "upload" } }
+      ],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE" },
+        { "name": "MASK", "type": "MASK" }
+      ],
+      "properties": { "Node name for S&R": "LoadImage" },
+      "widgets_values": ["", "image"]
+    }
+  ],
+  "connections": [
+    { "fromKey": "clip",         "fromSlot": 0, "toKey": "conditioning", "toSlot": 0, "type": "CLIP" },
+    { "fromKey": "videoVae",     "fromSlot": 0, "toKey": "conditioning", "toSlot": 1, "type": "VAE" },
+    { "fromKey": "duration",     "fromSlot": 0, "toKey": "mathExpr",     "toSlot": 0, "type": "FLOAT" },
+    { "fromKey": "mathExpr",     "fromSlot": 1, "toKey": "conditioning", "toSlot": 7, "type": "INT" },
+    { "fromKey": "unet",         "fromSlot": 0, "toKey": "scheduler",    "toSlot": 0, "type": "MODEL" },
+    { "fromKey": "unet",         "fromSlot": 0, "toKey": "guider",       "toSlot": 0, "type": "MODEL" },
+    { "fromKey": "conditioning", "fromSlot": 0, "toKey": "guider",       "toSlot": 1, "type": "CONDITIONING" },
+    { "fromKey": "conditioning", "fromSlot": 1, "toKey": "sampler",      "toSlot": 4, "type": "LATENT" },
+    { "fromKey": "noise",        "fromSlot": 0, "toKey": "sampler",      "toSlot": 0, "type": "NOISE" },
+    { "fromKey": "guider",       "fromSlot": 0, "toKey": "sampler",      "toSlot": 1, "type": "GUIDER" },
+    { "fromKey": "samplerSelect","fromSlot": 0, "toKey": "sampler",      "toSlot": 2, "type": "SAMPLER" },
+    { "fromKey": "scheduler",    "fromSlot": 0, "toKey": "sampler",      "toSlot": 3, "type": "SIGMAS" },
+    { "fromKey": "sampler",      "fromSlot": 0, "toKey": "videoDecode",  "toSlot": 0, "type": "LATENT" },
+    { "fromKey": "videoVae",     "fromSlot": 0, "toKey": "videoDecode",  "toSlot": 1, "type": "VAE" },
+    { "fromKey": "sampler",      "fromSlot": 0, "toKey": "audioDecode",  "toSlot": 0, "type": "LATENT" },
+    { "fromKey": "audioVae",     "fromSlot": 0, "toKey": "audioDecode",  "toSlot": 1, "type": "VAE" },
+    { "fromKey": "videoDecode",  "fromSlot": 0, "toKey": "createVideo",  "toSlot": 0, "type": "IMAGE" },
+    { "fromKey": "audioDecode",  "fromSlot": 0, "toKey": "createVideo",  "toSlot": 1, "type": "AUDIO" },
+    { "fromKey": "createVideo",  "fromSlot": 0, "toKey": "saveVideo",    "toSlot": 0, "type": "VIDEO" },
+    { "fromKey": "firstFrameNode","fromSlot": 0,"toKey": "conditioning", "toSlot": 2, "type": "IMAGE", "optional": "firstFrame" },
+    { "fromKey": "lastFrameNode", "fromSlot": 0,"toKey": "conditioning", "toSlot": 3, "type": "IMAGE", "optional": "lastFrame" }
+  ],
+  "loraInsertion": {
+    "fromKey": "unet",
+    "fromSlot": 0,
+    "toKey": "guider",
+    "toSlot": 0
+  },
+  "optionalNodes": ["firstFrame", "lastFrame"],
+  "modelInjections": [
+    { "key": "unet",     "widgetIndex": 0, "role": "unet" },
+    { "key": "clip",     "widgetIndex": 0, "role": "encoder" },
+    { "key": "videoVae", "widgetIndex": 0, "role": "videoVae" },
+    { "key": "audioVae", "widgetIndex": 0, "role": "audioVae" }
+  ],
+  "paramInjections": [
+    { "key": "conditioning", "widgetIndex": 1, "param": "width" },
+    { "key": "conditioning", "widgetIndex": 2, "param": "height" },
+    { "key": "duration",     "widgetIndex": 0, "param": "duration" },
+    { "key": "scheduler",    "widgetIndex": 0, "param": "scheduler" },
+    { "key": "scheduler",    "widgetIndex": 1, "param": "steps" },
+    { "key": "samplerSelect","widgetIndex": 0, "param": "sampler" },
+    { "key": "noise",        "widgetIndex": 0, "param": "seed" },
+    { "key": "createVideo",  "widgetIndex": 0, "param": "fps" },
+    { "key": "saveVideo",    "widgetIndex": 0, "param": "filenamePrefix" }
+  ],
+  "promptInjections": [
+    { "key": "conditioning", "widgetIndex": 0, "role": "videoPrompt" }
+  ],
+  "pluginDependencies": []
+}

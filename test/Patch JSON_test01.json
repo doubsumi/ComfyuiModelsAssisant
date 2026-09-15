@@ -1,0 +1,321 @@
+{
+  "patchVersion": "1.0.0",
+  "source": "llm",
+  "sourceModel": "deepseek-chat",
+  "timestamp": "2026-09-15T10:30:00Z",
+  "models": [
+    {
+      "file": "boogu_image_turbo_fp8_scaled.safetensors",
+      "dir": "diffusion_models",
+      "arch": "boogu",
+      "role": "unet",
+      "compatibleEncoders": ["qwen3vl_8b_fp8_scaled.safetensors"],
+      "compatibleVaes": ["ae.safetensors"],
+      "compatibleLoras": ["boogu"],
+      "defaultParams": {
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler": "euler",
+        "scheduler": "sgm_uniform"
+      },
+      "_note": "Boogu Image Turbo 主模型，沿用 boogu 架构配套。"
+    },
+    {
+      "file": "krea2_turbo_fp8_scaled.safetensors",
+      "dir": "diffusion_models",
+      "arch": "krea2",
+      "role": "unet",
+      "compatibleEncoders": ["qwen3vl_4b_fp8_scaled.safetensors"],
+      "compatibleVaes": ["qwen_image_vae.safetensors"],
+      "compatibleLoras": ["krea2"],
+      "defaultParams": {
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler": "euler",
+        "scheduler": "simple"
+      },
+      "_note": "Krea 2 Turbo 主模型，使用 qwen3vl 4B 编码器和 qwen_image_vae。"
+    },
+    {
+      "file": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "arch": "minimax_h3_fl2va",
+      "role": "unet",
+      "compatibleEncoders": [
+        "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "qwen3vl_8b_fp8_scaled.safetensors",
+        "qwen3vl_4b_fp8_scaled.safetensors"
+      ],
+      "compatibleVaes": [
+        "minimax_h3_video_vae_fp16.safetensors",
+        "minimax_h3_audio_vae_fp32.safetensors"
+      ],
+      "compatibleLoras": ["minimax_h3"],
+      "defaultParams": {
+        "steps": 20,
+        "cfg": 1.0,
+        "sampler": "res_multistep",
+        "scheduler": "simple"
+      },
+      "_note": "MiniMax H3 FL2VA 主模型，配套视频 VAE 和音频 VAE。"
+    },
+    {
+      "file": "minimax_h3_hybrid_fl2va_ref2va_b25-49-int8.safetensors",
+      "dir": "diffusion_models",
+      "arch": "minimax_h3_fl2va",
+      "role": "unet",
+      "compatibleEncoders": [
+        "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "qwen3vl_8b_fp8_scaled.safetensors",
+        "qwen3vl_4b_fp8_scaled.safetensors"
+      ],
+      "compatibleVaes": [
+        "minimax_h3_video_vae_fp16.safetensors",
+        "minimax_h3_audio_vae_fp32.safetensors"
+      ],
+      "compatibleLoras": ["minimax_h3"],
+      "defaultParams": {
+        "steps": 20,
+        "cfg": 1.0,
+        "sampler": "res_multistep",
+        "scheduler": "simple"
+      },
+      "_note": "MiniMax H3 FL2VA/Ref2VA 混合模型，按 FL2VA 注册；Ref2VA 场景可参考 4 步参数。"
+    },
+    {
+      "file": "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "arch": "minimax_h3_ref2va",
+      "role": "unet",
+      "compatibleEncoders": ["qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors"],
+      "compatibleVaes": [
+        "minimax_h3_video_vae_fp16.safetensors",
+        "minimax_h3_audio_vae_fp32.safetensors"
+      ],
+      "compatibleLoras": ["minimax_h3"],
+      "defaultParams": {
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler": "euler",
+        "scheduler": "simple"
+      },
+      "_note": "MiniMax H3 Ref2VA 主模型，使用 32B MiniMax H3 专用编码器。"
+    },
+    {
+      "file": "minimax_h3_latent_upscaler_3d_fp16.safetensors",
+      "dir": "latent_upscale_models",
+      "arch": null,
+      "role": "vae",
+      "_note": "MiniMax H3 3D latent upscaler，非标准 VAE；ComfyUI 中通常用 LatentUpscaleModelLoader 加载。"
+    },
+    {
+      "file": "MysticXXX_MMH3-V1.safetensors",
+      "dir": "loras",
+      "arch": null,
+      "role": "lora",
+      "triggerWord": "",
+      "defaultWeight": 1.0,
+      "_note": "文件名暗示 MiniMax H3，但元数据为恶搞/非标准内容，无法可靠确认底模架构。"
+    },
+    {
+      "file": "krea2_darkbrush.safetensors",
+      "dir": "loras",
+      "arch": "krea2",
+      "role": "lora",
+      "triggerWord": "",
+      "defaultWeight": 0.8,
+      "_note": "Krea2 风格 LoRA，建议权重 0.8。"
+    },
+    {
+      "file": "krea2_style_reference.safetensors",
+      "dir": "loras",
+      "arch": "krea2",
+      "role": "lora",
+      "triggerWord": "",
+      "defaultWeight": 0.8,
+      "_note": "Krea2 风格参考 LoRA，建议权重 0.8。"
+    },
+    {
+      "file": "minimax_h3_fl2v_turbo_4step_v1.0_768p_comfyui_bf16.safetensors",
+      "dir": "loras",
+      "arch": "minimax_h3_fl2va",
+      "role": "lora",
+      "triggerWord": "",
+      "defaultWeight": 1.0,
+      "_note": "MiniMax H3 FL2V 4 步加速 LoRA。"
+    },
+    {
+      "file": "minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+      "dir": "loras",
+      "arch": "minimax_h3_fl2va",
+      "role": "lora",
+      "triggerWord": "",
+      "defaultWeight": 1.0,
+      "_note": "MiniMax H3 FL2V 8 步加速 LoRA。"
+    },
+    {
+      "file": "minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors",
+      "dir": "loras",
+      "arch": "minimax_h3_ref2va",
+      "role": "lora",
+      "triggerWord": "",
+      "defaultWeight": 1.0,
+      "_note": "MiniMax H3 Ref2V 4 步加速 LoRA。"
+    },
+    {
+      "file": "minimax_h3_turbo_v4_step600_ema_pruned_comfyui.safetensors",
+      "dir": "loras",
+      "arch": "minimax_h3_fl2va",
+      "role": "lora",
+      "triggerWord": "",
+      "defaultWeight": 1.0,
+      "_note": "MiniMax H3 通用 turbo LoRA，按 FL2VA 注册，可能兼容 Ref2VA。"
+    },
+    {
+      "file": "wushu_spatial_physics_v2_1000_pruned.safetensors",
+      "dir": "loras",
+      "arch": null,
+      "role": "lora",
+      "triggerWord": "",
+      "defaultWeight": 1.0,
+      "_note": "未识别出已注册底模架构。"
+    },
+    {
+      "file": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "dir": "text_encoders",
+      "arch": "minimax_h3_fl2va",
+      "role": "encoder",
+      "encoderNodeParams": {
+        "type": "minimax"
+      },
+      "_note": "MiniMax H3 专用 Qwen3-VL 32B 编码器，arch 按所服务的已注册架构 minimax_h3_fl2va 填写。"
+    },
+    {
+      "file": "qwen3vl_4b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "arch": "krea2",
+      "role": "encoder",
+      "encoderNodeParams": {
+        "type": "krea2"
+      },
+      "_note": "Krea2 使用 type=krea2；arch 按所服务的已注册架构 krea2 填写。"
+    },
+    {
+      "file": "qwen3vl_8b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "arch": "boogu",
+      "role": "encoder",
+      "encoderNodeParams": {
+        "type": "boogu"
+      },
+      "_note": "Boogu 使用 type=boogu；arch 按所服务的已注册架构 boogu 填写。"
+    },
+    {
+      "file": "krea2_turbo_int8_convrot.safetensors",
+      "dir": "unet",
+      "arch": "krea2",
+      "role": "unet",
+      "compatibleEncoders": ["qwen3vl_4b_fp8_scaled.safetensors"],
+      "compatibleVaes": ["qwen_image_vae.safetensors"],
+      "compatibleLoras": ["krea2"],
+      "defaultParams": {
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler": "euler",
+        "scheduler": "simple"
+      },
+      "_note": "Krea2 Turbo int8 主模型，位于 unet/ 目录。"
+    },
+    {
+      "file": "ae.safetensors",
+      "dir": "vae",
+      "arch": "flux",
+      "role": "vae",
+      "_note": "Flux.1 Autoencoder，boogu/flux 共用。"
+    },
+    {
+      "file": "minimax_h3_audio_vae_fp32.safetensors",
+      "dir": "vae",
+      "arch": "minimax_h3_fl2va",
+      "role": "audioVae",
+      "_note": "MiniMax H3 音频 VAE，arch 按已注册架构 minimax_h3_fl2va 填写。"
+    },
+    {
+      "file": "minimax_h3_video_vae_fp16.safetensors",
+      "dir": "vae",
+      "arch": "minimax_h3_fl2va",
+      "role": "videoVae",
+      "_note": "MiniMax H3 视频 VAE fp16，arch 按已注册架构 minimax_h3_fl2va 填写。"
+    },
+    {
+      "file": "minimax_h3_video_vae_int8_convrot.safetensors",
+      "dir": "vae",
+      "arch": "minimax_h3_fl2va",
+      "role": "videoVae",
+      "_note": "MiniMax H3 视频 VAE int8，arch 按已注册架构 minimax_h3_fl2va 填写。"
+    },
+    {
+      "file": "qwen_image_vae.safetensors",
+      "dir": "vae",
+      "arch": "qwen_image",
+      "role": "vae",
+      "_note": "Qwen-Image 与 Krea2 使用的图像 VAE，arch 按已注册架构 qwen_image 填写。"
+    },
+    {
+      "file": "taef1_decoder.safetensors",
+      "dir": "vae_approx",
+      "arch": "flux",
+      "role": "vae",
+      "_note": "TAEF1 是 FLUX.1 的近似 VAE 解码器。"
+    },
+    {
+      "file": "taef1_encoder.safetensors",
+      "dir": "vae_approx",
+      "arch": "flux",
+      "role": "vae",
+      "_note": "TAEF1 是 FLUX.1 的近似 VAE 编码器。"
+    },
+    {
+      "file": "taesd3_decoder.safetensors",
+      "dir": "vae_approx",
+      "arch": null,
+      "role": "vae",
+      "_note": "TAESD3 对应 SD3，当前未注册 SD3 架构。"
+    },
+    {
+      "file": "taesd3_encoder.safetensors",
+      "dir": "vae_approx",
+      "arch": null,
+      "role": "vae",
+      "_note": "TAESD3 对应 SD3，当前未注册 SD3 架构。"
+    },
+    {
+      "file": "taesd_decoder.safetensors",
+      "dir": "vae_approx",
+      "arch": "sd15",
+      "role": "vae",
+      "_note": "TAESD 是 SD1.5 的近似 VAE 解码器。"
+    },
+    {
+      "file": "taesd_encoder.safetensors",
+      "dir": "vae_approx",
+      "arch": "sd15",
+      "role": "vae",
+      "_note": "TAESD 是 SD1.5 的近似 VAE 编码器。"
+    },
+    {
+      "file": "taesdxl_decoder.safetensors",
+      "dir": "vae_approx",
+      "arch": "sdxl",
+      "role": "vae",
+      "_note": "TAESDXL 是 SDXL 的近似 VAE 解码器。"
+    },
+    {
+      "file": "taesdxl_encoder.safetensors",
+      "dir": "vae_approx",
+      "arch": "sdxl",
+      "role": "vae",
+      "_note": "TAESDXL 是 SDXL 的近似 VAE 编码器。"
+    }
+  ]
+}

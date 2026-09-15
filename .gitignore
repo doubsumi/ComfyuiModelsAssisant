@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# 运行时个人数据（含本机路径/用户内容，不入库；程序首次运行自动生成）
+data/config.json
+data/scan_cache.json
+data/model_registry.json
+data/notes.json
+data/presets.json
+data/patches/

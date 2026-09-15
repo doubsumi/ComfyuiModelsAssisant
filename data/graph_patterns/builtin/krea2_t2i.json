@@ -1,0 +1,189 @@
+{
+  "id": "krea2_t2i",
+  "version": "1.0.0",
+  "label": "Krea2 Turbo · 文生图",
+  "category": "image",
+  "compatibleArchitectures": ["krea2"],
+  "nodeIdPool": { "base": 1, "lora": 1000, "optional": 2000 },
+  "nodes": [
+    {
+      "key": "unet",
+      "type": "UNETLoader",
+      "pos": [-410, -240],
+      "size": [450, 140],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "unet_name", "type": "COMBO", "widget": { "name": "unet_name" } },
+        { "name": "weight_dtype", "type": "COMBO", "widget": { "name": "weight_dtype" } }
+      ],
+      "outputs": [{ "name": "MODEL", "type": "MODEL" }],
+      "properties": { "Node name for S&R": "UNETLoader" },
+      "widgets_values": ["krea2_turbo_fp8_scaled.safetensors", "default"]
+    },
+    {
+      "key": "clip",
+      "type": "CLIPLoader",
+      "pos": [-410, 150],
+      "size": [450, 170],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "clip_name", "type": "COMBO", "widget": { "name": "clip_name" } },
+        { "name": "type", "type": "COMBO", "widget": { "name": "type" } },
+        { "name": "device", "type": "COMBO", "widget": { "name": "device" } }
+      ],
+      "outputs": [{ "name": "CLIP", "type": "CLIP" }],
+      "properties": { "Node name for S&R": "CLIPLoader" },
+      "widgets_values": ["qwen3vl_4b_fp8_scaled.safetensors", "krea2", "default"]
+    },
+    {
+      "key": "vae",
+      "type": "VAELoader",
+      "pos": [-410, 390],
+      "size": [450, 120],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "vae_name", "type": "COMBO", "widget": { "name": "vae_name" } }
+      ],
+      "outputs": [{ "name": "VAE", "type": "VAE" }],
+      "properties": { "Node name for S&R": "VAELoader" },
+      "widgets_values": ["qwen_image_vae.safetensors"]
+    },
+    {
+      "key": "positive",
+      "type": "CLIPTextEncode",
+      "pos": [100, -250],
+      "size": [480, 420],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "clip", "type": "CLIP" },
+        { "name": "text", "type": "STRING", "widget": { "name": "text" } }
+      ],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING" }],
+      "properties": { "Node name for S&R": "CLIPTextEncode" },
+      "widgets_values": [""]
+    },
+    {
+      "key": "negative",
+      "type": "ConditioningZeroOut",
+      "pos": [350, 220],
+      "size": [225, 26],
+      "flags": { "collapsed": true },
+      "mode": 0,
+      "inputs": [{ "name": "conditioning", "type": "CONDITIONING" }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING" }],
+      "properties": { "Node name for S&R": "ConditioningZeroOut" },
+      "widgets_values": []
+    },
+    {
+      "key": "latent",
+      "type": "EmptyLatentImage",
+      "pos": [170, 350],
+      "size": [320, 170],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "width", "type": "INT", "widget": { "name": "width" } },
+        { "name": "height", "type": "INT", "widget": { "name": "height" } },
+        { "name": "batch_size", "type": "INT", "widget": { "name": "batch_size" } }
+      ],
+      "outputs": [{ "name": "LATENT", "type": "LATENT" }],
+      "properties": { "Node name for S&R": "EmptyLatentImage" },
+      "widgets_values": [1024, 1024, 1]
+    },
+    {
+      "key": "sampler",
+      "type": "KSampler",
+      "pos": [640, -100],
+      "size": [320, 590],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL" },
+        { "name": "positive", "type": "CONDITIONING" },
+        { "name": "negative", "type": "CONDITIONING" },
+        { "name": "latent_image", "type": "LATENT" },
+        { "name": "seed", "type": "INT", "widget": { "name": "seed" } },
+        { "name": "steps", "type": "INT", "widget": { "name": "steps" } },
+        { "name": "cfg", "type": "FLOAT", "widget": { "name": "cfg" } },
+        { "name": "sampler_name", "type": "COMBO", "widget": { "name": "sampler_name" } },
+        { "name": "scheduler", "type": "COMBO", "widget": { "name": "scheduler" } },
+        { "name": "denoise", "type": "FLOAT", "widget": { "name": "denoise" } }
+      ],
+      "outputs": [{ "name": "LATENT", "type": "LATENT" }],
+      "properties": { "Node name for S&R": "KSampler" },
+      "widgets_values": [0, "randomize", 8, 1.0, "euler", "simple", 1.0]
+    },
+    {
+      "key": "decode",
+      "type": "VAEDecode",
+      "pos": [1010, -270],
+      "size": [230, 100],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "samples", "type": "LATENT" },
+        { "name": "vae", "type": "VAE" }
+      ],
+      "outputs": [{ "name": "IMAGE", "type": "IMAGE" }],
+      "properties": { "Node name for S&R": "VAEDecode" },
+      "widgets_values": []
+    },
+    {
+      "key": "save",
+      "type": "SaveImage",
+      "pos": [480, -110],
+      "size": [880, 1020],
+      "flags": {},
+      "mode": 0,
+      "inputs": [
+        { "name": "images", "type": "IMAGE" },
+        { "name": "filename_prefix", "type": "STRING", "widget": { "name": "filename_prefix" } }
+      ],
+      "outputs": [{ "name": "images", "type": "IMAGE" }],
+      "properties": { "Node name for S&R": "SaveImage" },
+      "widgets_values": ["Krea2_turbo"]
+    }
+  ],
+  "connections": [
+    { "fromKey": "clip",      "fromSlot": 0, "toKey": "positive", "toSlot": 0, "type": "CLIP" },
+    { "fromKey": "positive",  "fromSlot": 0, "toKey": "sampler",  "toSlot": 1, "type": "CONDITIONING" },
+    { "fromKey": "positive",  "fromSlot": 0, "toKey": "negative", "toSlot": 0, "type": "CONDITIONING" },
+    { "fromKey": "negative",  "fromSlot": 0, "toKey": "sampler",  "toSlot": 2, "type": "CONDITIONING" },
+    { "fromKey": "latent",    "fromSlot": 0, "toKey": "sampler",  "toSlot": 3, "type": "LATENT" },
+    { "fromKey": "sampler",   "fromSlot": 0, "toKey": "decode",   "toSlot": 0, "type": "LATENT" },
+    { "fromKey": "vae",       "fromSlot": 0, "toKey": "decode",   "toSlot": 1, "type": "VAE" },
+    { "fromKey": "decode",    "fromSlot": 0, "toKey": "save",     "toSlot": 0, "type": "IMAGE" }
+  ],
+  "loraInsertion": {
+    "fromKey": "unet",
+    "fromSlot": 0,
+    "toKey": "sampler",
+    "toSlot": 0
+  },
+  "optionalNodes": [],
+  "modelInjections": [
+    { "key": "unet", "widgetIndex": 0, "role": "unet" },
+    { "key": "clip", "widgetIndex": 0, "role": "encoder" },
+    { "key": "vae",  "widgetIndex": 0, "role": "vae" }
+  ],
+  "paramInjections": [
+    { "key": "sampler", "widgetIndex": 0, "param": "seed" },
+    { "key": "sampler", "widgetIndex": 2, "param": "steps" },
+    { "key": "sampler", "widgetIndex": 3, "param": "cfg" },
+    { "key": "sampler", "widgetIndex": 4, "param": "sampler" },
+    { "key": "sampler", "widgetIndex": 5, "param": "scheduler" },
+    { "key": "sampler", "widgetIndex": 6, "param": "denoise" },
+    { "key": "latent",  "widgetIndex": 0, "param": "width" },
+    { "key": "latent",  "widgetIndex": 1, "param": "height" },
+    { "key": "latent",  "widgetIndex": 2, "param": "batchSize" },
+    { "key": "save",    "widgetIndex": 0, "param": "filenamePrefix" }
+  ],
+  "promptInjections": [
+    { "key": "positive", "widgetIndex": 0, "role": "positive" }
+  ],
+  "pluginDependencies": []
+}
