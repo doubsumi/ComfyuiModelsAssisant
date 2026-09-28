@@ -1254,6 +1254,7 @@
 			<section class="view active" id="view-models">
 				<div class="toolbar">
 					<button class="btn primary" id="btn-scan">🔄 重新扫描</button>
+					<button class="btn" id="btn-copy-models">📋 复制模型清单</button>
 					<button class="btn" id="btn-clear-notes">清空所有备注</button>
 					<input type="text" id="search-models" placeholder="🔍 搜索模型名 / 备注 / 分类 / 架构…">
 					<select class="btn" id="filter-role" style="padding: 7px 10px;">
@@ -1676,6 +1677,57 @@
 					el.style.transition = 'opacity .3s';
 					setTimeout(() => el.remove(), 300);
 				}, timeout);
+			}
+
+			/* ============================================================
+			   复制模型清单
+			============================================================ */
+			async function copyModelList() {
+				if (!state.models || !state.models.length) {
+					toast('当前没有模型数据，请先扫描', 'warn');
+					return;
+				}
+
+				// 按目录分组，生成易读文本
+				const groups = {};
+				state.models.forEach(m => {
+					if (!groups[m.dir]) groups[m.dir] = [];
+					groups[m.dir].push(m);
+				});
+				const dirs = Object.keys(groups).sort();
+
+				const lines = [];
+				dirs.forEach(dir => {
+					lines.push(`## ${dir} (${groups[dir].length})`);
+					groups[dir].forEach(m => {
+						const parts = [m.file];
+						if (m.arch) parts.push(`[${m.arch}]`);
+						if (m.role) parts.push(`(${m.role})`);
+						lines.push('  ' + parts.join(' '));
+					});
+					lines.push('');
+				});
+
+				const text = lines.join('\n');
+				try {
+					await navigator.clipboard.writeText(text);
+					toast(`已复制 ${state.models.length} 个模型到剪贴板`, 'success');
+				} catch (err) {
+					// 兼容旧浏览器 / 非安全上下文
+					const ta = document.createElement('textarea');
+					ta.value = text;
+					ta.style.position = 'fixed';
+					ta.style.opacity = '0';
+					document.body.appendChild(ta);
+					ta.select();
+					try {
+						document.execCommand('copy');
+						toast(`已复制 ${state.models.length} 个模型到剪贴板`, 'success');
+					} catch (e) {
+						toast('复制失败，请手动复制', 'error');
+					}
+					document.body.removeChild(ta);
+				}
 			}
 
 			/* ============================================================
@@ -3276,6 +3328,8 @@
 			});
 
 			document.getElementById('btn-scan').addEventListener('click', doScan);
+
+			document.getElementById('btn-copy-models').addEventListener('click', copyModelList);
 
 			document.getElementById('btn-clear-notes').addEventListener('click', async () => {
 				if (!confirm('确定清空所有备注吗？')) return;
