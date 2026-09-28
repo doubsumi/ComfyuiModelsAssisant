@@ -1467,15 +1467,29 @@
 						<div class="step-title">
 							<span class="step-num">2</span>
 							<span>上传 Patch</span>
+							<button class="btn small" style="margin-left: auto;" id="btn-patch-mode-toggle">📋 一键复制 Patch</button>
 						</div>
-						<div class="step-desc">
+						<div class="step-desc" id="patch-step-desc">
 							将大模型返回的 JSON Patch 保存为 <code>.json</code> 文件，拖到下方或点击选择。
 						</div>
+
+						<!-- 文件上传模式 -->
 						<div class="drop-zone" id="patch-drop-zone">
 							<div class="icon">📄</div>
 							<div class="text">拖拽 Patch JSON 到此处，或点击选择文件</div>
 							<input type="file" id="patch-file-input" accept=".json,application/json"
 								style="display: none;">
+						</div>
+
+						<!-- 粘贴文本模式 -->
+						<div id="patch-paste-zone" style="display: none;">
+							<textarea class="prompt-area" id="patch-paste-input"
+								placeholder="已将剪贴板内容粘贴到此处，可手动修改后点击「提交 Patch」"
+								style="min-height: 180px; color: var(--text);"></textarea>
+							<div style="margin-top: 10px; display: flex; gap: 8px;">
+								<button class="btn primary" id="btn-patch-submit-paste">✅ 提交 Patch</button>
+								<button class="btn" id="btn-patch-repaste">🔄 重新读取剪贴板</button>
+							</div>
 						</div>
 					</div>
 
@@ -3196,13 +3210,78 @@
 				if (fileInput.files[0]) handlePatchUpload(fileInput.files[0]);
 			});
 
+			/* ---------------- 粘贴 / 上传 模式切换 ---------------- */
+			const patchModeToggle = document.getElementById('btn-patch-mode-toggle');
+			const patchDropZone = document.getElementById('patch-drop-zone');
+			const patchPasteZone = document.getElementById('patch-paste-zone');
+			const patchPasteInput = document.getElementById('patch-paste-input');
+			const patchStepDesc = document.getElementById('patch-step-desc');
+
+			const PATCH_DESC_UPLOAD = '将大模型返回的 JSON Patch 保存为 <code>.json</code> 文件，拖到下方或点击选择。';
+			const PATCH_DESC_PASTE = '已从剪贴板读取 Patch JSON 到下方输入框，可手动调整后点击「提交 Patch」。';
+
+			let patchMode = 'upload'; // upload | paste
+
+			function setPatchMode(mode) {
+				patchMode = mode;
+				const isPaste = mode === 'paste';
+				patchDropZone.style.display = isPaste ? 'none' : '';
+				patchPasteZone.style.display = isPaste ? '' : 'none';
+				patchModeToggle.textContent = isPaste ? '📄 上传文件' : '📋 一键复制 Patch';
+				patchStepDesc.innerHTML = isPaste ? PATCH_DESC_PASTE : PATCH_DESC_UPLOAD;
+			}
+
+			async function pasteClipboardIntoPatchInput() {
+				try {
+					const text = await navigator.clipboard.readText();
+					if (!text || !text.trim()) {
+						toast('剪贴板为空', 'warn');
+						return false;
+					}
+					patchPasteInput.value = text;
+					return true;
+				} catch (err) {
+					toast('读取剪贴板失败，请手动粘贴到输入框', 'error');
+					patchPasteInput.focus();
+					return false;
+				}
+			}
+
+			patchModeToggle.addEventListener('click', async () => {
+				if (patchMode === 'upload') {
+					setPatchMode('paste');
+					await pasteClipboardIntoPatchInput();
+				} else {
+					setPatchMode('upload');
+				}
+			});
+
+			document.getElementById('btn-patch-repaste').addEventListener('click', async () => {
+				if (await pasteClipboardIntoPatchInput()) {
+					toast('已重新读取剪贴板', 'success');
+				}
+			});
+
+			document.getElementById('btn-patch-submit-paste').addEventListener('click', async () => {
+				const text = patchPasteInput.value;
+				if (!text || !text.trim()) {
+					toast('输入框为空，请先粘贴 Patch JSON', 'warn');
+					return;
+				}
+				await submitPatchText(text, '剪贴板内容');
+			});
+
 			async function handlePatchUpload(file) {
+				const text = await file.text();
+				await submitPatchText(text, file.name);
+			}
+
+			async function submitPatchText(text, sourceLabel) {
 				const result = document.getElementById('patch-result');
 				result.classList.remove('hidden');
-				result.innerHTML = `<div class="result-box">正在解析 ${esc(file.name)} …</div>`;
+				result.innerHTML = `<div class="result-box">正在解析 ${esc(sourceLabel)} …</div>`;
 
 				try {
-					const text = await file.text();
 					let patch;
 					try {
 						patch = JSON.parse(text);
